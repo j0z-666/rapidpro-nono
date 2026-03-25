@@ -82,6 +82,9 @@ services:
       MAILROOM_URL: http://mailroom:8090
       MAILROOM_AUTH_TOKEN: topsecret
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-supersecretkey123}
+      # Deshabilitar DynamoDB/S3
+      USE_DYNAMO: "false"
+      USE_S3: "false"
     mem_limit: 1g
     healthcheck:
       test: ["CMD-SHELL", "curl -s http://localhost:8000 >/dev/null || exit 1"]
@@ -106,6 +109,9 @@ services:
       ELASTICSEARCH_URL: http://elastic:9200
       MAILROOM_URL: http://mailroom:8090
       MAILROOM_AUTH_TOKEN: topsecret
+      # Deshabilitar DynamoDB/S3
+      USE_DYNAMO: "false"
+      USE_S3: "false"
     mem_limit: 1g
     restart: unless-stopped
 
