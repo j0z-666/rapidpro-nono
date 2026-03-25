@@ -82,6 +82,7 @@ services:
       MAILROOM_URL: http://mailroom:8090
       MAILROOM_AUTH_TOKEN: topsecret
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-supersecretkey123}
+      DJANGO_EMAIL_VERIFICATION: "none"
       # Deshabilitar DynamoDB/S3
       USE_DYNAMO: "false"
       USE_S3: "false"
