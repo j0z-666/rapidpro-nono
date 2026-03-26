@@ -183,10 +183,28 @@ services:
     mem_limit: 512m
     restart: unless-stopped
 
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - nginx
+    restart: unless-stopped
+
 volumes:
   postgres:
     driver: local
   elastic:
     driver: local
   valkey:
+    driver: local
+  caddy_data:    
+    driver: local
+  caddy_config:  
     driver: local
