@@ -61,6 +61,7 @@ services:
       AWS_ACCESS_KEY_ID: root
       AWS_SECRET_ACCESS_KEY: tembatemba
       AWS_DEFAULT_REGION: us-east-1
+      LOCALSTACK_AUTH_TOKEN: ${LOCALSTACK_AUTH_TOKEN}
     healthcheck:
       test: ["CMD-SHELL", "curl -s http://localhost:4566/_localstack/health >/dev/null || exit 1"]
       interval: 10s
