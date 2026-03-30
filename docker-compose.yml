@@ -106,6 +106,7 @@ services:
       DEFAULT_FROM_EMAIL: ${EMAIL_HOST_USER}
       FLOW_FROM_EMAIL: ${EMAIL_HOST_USER}
       CSRF_TRUSTED_ORIGINS: https://rapidpro.nono-labs.com
+      USE_X_FORWARDED_HOST: "True"
     healthcheck:
       test: curl -s http://localhost:8000 >/dev/null || exit 1
       interval: 15s
