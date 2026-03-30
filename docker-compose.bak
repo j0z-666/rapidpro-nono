@@ -49,22 +49,23 @@ services:
       interval: 5s
       timeout: 2s
 
-  # localstack:
-  #   image: localstack/localstack:latest
-  #   volumes:
-  #     - ./localstack/init-s3.sh:/etc/localstack/init/ready.d/init-s3.sh
-  #     - localstack:/var/lib/localstack
-  #   ports:
-  #     - 4566:4566
-  #   environment:
-  #     SERVICES: s3,dynamodb
-  #     AWS_ACCESS_KEY_ID: root
-  #     AWS_SECRET_ACCESS_KEY: tembatemba
-  #     AWS_DEFAULT_REGION: us-east-1
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "curl -s http://localhost:4566/_localstack/health >/dev/null || exit 1"]
-  #     interval: 10s
-  #     timeout: 5s
+  localstack:
+    image: localstack/localstack:latest
+    volumes:
+      - ./localstack/init-s3.sh:/etc/localstack/init/ready.d/init-s3.sh
+      - localstack:/var/lib/localstack
+    ports:
+      - 4566:4566
+    environment:
+      SERVICES: s3,dynamodb
+      AWS_ACCESS_KEY_ID: root
+      AWS_SECRET_ACCESS_KEY: tembatemba
+      AWS_DEFAULT_REGION: us-east-1
+      LOCALSTACK_AUTH_TOKEN: ${LOCALSTACK_AUTH_TOKEN}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:4566/_localstack/health >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
 
   rapidpro:
     image: nyaruka/rapidpro:stable
@@ -80,13 +81,21 @@ services:
         condition: service_healthy
       valkey:
         condition: service_healthy
-      #localstack:
-      #  condition: service_healthy
+      localstack:
+        condition: service_healthy
     ports:
       - 8000:8000
     environment:
       MAILROOM_URL: http://mailroom:8090
       MAILROOM_AUTH_TOKEN: topsecret
+      EMAIL_HOST: smtp.gmail.com
+      EMAIL_PORT: 587
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+      EMAIL_USE_TLS: "true"
+      EMAIL_USE_SSL: "false"
+      DEFAULT_FROM_EMAIL: ${EMAIL_HOST_USER}
+      FLOW_FROM_EMAIL: ${EMAIL_HOST_USER}
     healthcheck:
       test: curl -s http://localhost:8000 >/dev/null || exit 1
       interval: 15s
