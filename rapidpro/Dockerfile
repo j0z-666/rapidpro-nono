@@ -1,22 +1,46 @@
 FROM python:3.12-bullseye
 
-ARG RAPIDPRO_TAG
-ENV RAPIDPRO_TAG=${RAPIDPRO_TAG:-main}
+ARG RAPIDPRO_TAG=main
 
-RUN apt-get update && apt-get install -y libgdal-dev ffmpeg nodejs npm
-RUN curl -sSL https://install.python-poetry.org | python3 -
-ENV PATH="/root/.local/bin:$PATH"
+ENV PYTHONUNBUFFERED=1
 ENV POETRY_VIRTUALENVS_IN_PROJECT=true
-RUN npm install -g n && n 20
-RUN npm install -g yarn less
+ENV PATH="/root/.local/bin:$PATH"
 
-WORKDIR /rapidpro 
-RUN wget -O rapidpro.tar.gz "https://github.com/nyaruka/rapidpro/archive/${RAPIDPRO_TAG}.tar.gz" && tar -xf rapidpro.tar.gz --strip-components=1 && rm rapidpro.tar.gz
-RUN poetry install --no-root
+# System deps
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    git \
+    curl \
+    libgdal-dev \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Node.js (estable)
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g yarn less
+
+# Poetry
+RUN curl -sSL https://install.python-poetry.org | python3 -
+
+WORKDIR /rapidpro
+
+# 🔥 TU FORK DIRECTO
+RUN git clone --branch ${RAPIDPRO_TAG} https://github.com/j0z-666/rapidpro.git .
+
+# Python deps
+RUN poetry install --no-root --no-interaction --no-ansi
+
+# Frontend deps
 RUN yarn install
-RUN ln -s /rapidpro/temba/settings.py.dev /rapidpro/temba/settings.py
 
-EXPOSE 8000
+# Settings (modo dev)
+RUN ln -sf /rapidpro/temba/settings.py.dev /rapidpro/temba/settings.py
+
+# Entrypoint
 COPY entrypoint.sh /rapidpro/
 RUN chmod +x /rapidpro/entrypoint.sh
+
+EXPOSE 8000
+
 ENTRYPOINT ["/rapidpro/entrypoint.sh"]

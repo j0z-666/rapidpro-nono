@@ -77,7 +77,7 @@ services:
     build:
       context: ./rapidpro/
       args:
-        - RAPIDPRO_TAG=v26.0.0
+        - RAPIDPRO_TAG=main
     command: ["webapp"]
     depends_on:
       postgres:
@@ -93,9 +93,14 @@ services:
     environment:
       MAILROOM_URL: http://mailroom:8090
       MAILROOM_AUTH_TOKEN: topsecret
-      EMAIL_HOST: mailhog
-      EMAIL_PORT: 1025
-      EMAIL_USE_TLS: "false"
+      EMAIL_HOST: smtp.gmail.com
+      EMAIL_PORT: 587
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+      EMAIL_USE_TLS: "true"
+      EMAIL_USE_SSL: "false"
+      DEFAULT_FROM_EMAIL: ${EMAIL_HOST_USER}
+      FLOW_FROM_EMAIL: ${EMAIL_HOST_USER}
     healthcheck:
       test: curl -s http://localhost:8000 >/dev/null || exit 1
       interval: 15s
@@ -108,7 +113,7 @@ services:
     build:
       context: ./rapidpro/
       args:
-        - RAPIDPRO_TAG=v26.0.0
+        - RAPIDPRO_TAG=main
     command: ["celery"]
     depends_on:
       rapidpro:
