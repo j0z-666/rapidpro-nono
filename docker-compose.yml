@@ -1,5 +1,10 @@
 name: rapidpro
 services:
+  mailhog:
+  image: mailhog/mailhog
+  ports:
+    - "1025:1025"
+    - "8025:8025"
   nginx:
     image: nginx
     volumes:
@@ -88,7 +93,9 @@ services:
     environment:
       MAILROOM_URL: http://mailroom:8090
       MAILROOM_AUTH_TOKEN: topsecret
-      DJANGO_ACCOUNT_EMAIL_VERIFICATION: "none"
+      EMAIL_HOST: mailhog
+      EMAIL_PORT: 1025
+      EMAIL_USE_TLS: "false"
     healthcheck:
       test: curl -s http://localhost:8000 >/dev/null || exit 1
       interval: 15s
