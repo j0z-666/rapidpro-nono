@@ -25,6 +25,7 @@ services:
       - 5432:5432
     environment:
       POSTGRES_PASSWORD: tembatemba
+    mem_reservation: 1g # Resource optimization
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       interval: 10s
@@ -41,10 +42,15 @@ services:
       xpack.security.enabled: false
       ingest.geoip.downloader.enabled: false
       logger.level: INFO
+      ES_JAVA_OPTS: -Xms2g -Xmx2g # Memory optimization for your VM
+    mem_reservation: 2g # Resource optimization
+    mem_limit: 4g # Resource optimization
     healthcheck:
-      test: curl -s http://localhost:9200 >/dev/null || exit 1
+      # Improved healthcheck: waits for cluster status to be yellow or green
+      test: ["CMD-SHELL", "curl -s -f http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s || exit 1"]
       interval: 10s
       timeout: 5s
+      retries: 10
 
   valkey:
     image: valkey/valkey:8.0-alpine
@@ -94,6 +100,7 @@ services:
         condition: service_healthy
     ports:
       - 8000:8000
+    mem_reservation: 1g # Resource optimization
     environment:
       MAILROOM_URL: http://mailroom:8090
       MAILROOM_AUTH_TOKEN: topsecret
@@ -122,7 +129,12 @@ services:
         - RAPIDPRO_TAG=mi-custom-v26
     command: ["celery"]
     depends_on:
-      rapidpro:
+      # Celery depends on the same core services as rapidpro
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+      rapidpro: # Still needs rapidpro to be up for some configurations
         condition: service_healthy
     environment:
       MAILROOM_URL: http://mailroom:8090
@@ -134,7 +146,14 @@ services:
       context: https://github.com/nyaruka/mailroom.git#v26.0.0
       dockerfile: Dockerfile
     depends_on:
-      rapidpro:
+      # More resilient dependencies
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+      elastic:
+        condition: service_healthy
+      localstack:
         condition: service_healthy
     ports:
       - 8090:8090
@@ -164,7 +183,12 @@ services:
       context: https://github.com/nyaruka/courier.git#v26.0.1
       dockerfile: Dockerfile
     depends_on:
-      rapidpro:
+      # More resilient dependencies
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+      localstack:
         condition: service_healthy
     ports:
       - 8080:8080
@@ -191,7 +215,10 @@ services:
       context: https://github.com/nyaruka/rp-indexer.git#v26.0.1
       dockerfile: Dockerfile
     depends_on:
-      rapidpro:
+      # More resilient dependencies
+      postgres:
+        condition: service_healthy
+      elastic:
         condition: service_healthy
     environment:
       INDEXER_DB: postgres://temba:temba@postgres:5432/temba?sslmode=disable

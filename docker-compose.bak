@@ -1,11 +1,20 @@
 name: rapidpro
 services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
   nginx:
     image: nginx
     volumes:
       - "./nginx/default.conf:/etc/nginx/conf.d/default.conf"
-    ports:
-      - 80:80
 
   postgres:
     image: postgres:17-alpine
@@ -72,7 +81,7 @@ services:
     build:
       context: ./rapidpro/
       args:
-        - RAPIDPRO_TAG=v26.0.0
+        - RAPIDPRO_TAG=mi-custom-v26
     command: ["webapp"]
     depends_on:
       postgres:
@@ -96,6 +105,8 @@ services:
       EMAIL_USE_SSL: "false"
       DEFAULT_FROM_EMAIL: ${EMAIL_HOST_USER}
       FLOW_FROM_EMAIL: ${EMAIL_HOST_USER}
+      CSRF_TRUSTED_ORIGINS: https://rapidpro.nono-labs.com
+      USE_X_FORWARDED_HOST: "True"
     healthcheck:
       test: curl -s http://localhost:8000 >/dev/null || exit 1
       interval: 15s
@@ -108,7 +119,7 @@ services:
     build:
       context: ./rapidpro/
       args:
-        - RAPIDPRO_TAG=v26.0.0
+        - RAPIDPRO_TAG=mi-custom-v26
     command: ["celery"]
     depends_on:
       rapidpro:
@@ -195,4 +206,8 @@ volumes:
   valkey:
     driver: local
   localstack:
+    driver: local
+  caddy_data:
+    driver: local
+  caddy_config:
     driver: local
