@@ -206,7 +206,7 @@ services:
       COURIER_AWS_ACCESS_KEY_ID: root
       COURIER_AWS_SECRET_ACCESS_KEY: tembatemba
       COURIER_DYNAMO_ENDPOINT: http://localstack:4566
-      COURIER_DYNAMO_TABLE_PREFIX: Temba
+      COURIER_DYNAMO_TABLE_PREFIX: Test #Temba
       COURIER_S3_ENDPOINT: http://localstack:4566
       COURIER_S3_ATTACHMENTS_BUCKET: temba-attachments
       COURIER_S3_PATH_STYLE: true
