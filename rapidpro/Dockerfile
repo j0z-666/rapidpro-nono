@@ -35,7 +35,7 @@ RUN poetry install --no-root --no-interaction --no-ansi
 RUN yarn install
 
 # Settings (modo dev)
-RUN ln -sf /rapidpro/temba/settings.py.dev /rapidpro/temba/settings.py
+RUN ln -sf /rapidpro/temba/settings.py.prod /rapidpro/temba/settings.py
 
 # Entrypoint
 COPY entrypoint.sh /rapidpro/
