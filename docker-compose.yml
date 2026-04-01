@@ -173,7 +173,7 @@ services:
       MAILROOM_AWS_ACCESS_KEY_ID: root
       MAILROOM_AWS_SECRET_ACCESS_KEY: tembatemba
       MAILROOM_DYNAMO_ENDPOINT: http://localstack:4566
-      MAILROOM_DYNAMO_TABLE_PREFIX: Temba
+      MAILROOM_DYNAMO_TABLE_PREFIX: Test #Temba
       MAILROOM_S3_ENDPOINT: http://localstack:4566
       MAILROOM_S3_SESSIONS_BUCKET: temba-sessions
       MAILROOM_S3_ATTACHMENTS_BUCKET: temba-attachments
