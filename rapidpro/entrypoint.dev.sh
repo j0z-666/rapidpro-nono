@@ -9,11 +9,7 @@ if [ "$ACTION" = "webapp" ]; then
     echo "Running RapidPro webapp..."
 	poetry run python3 manage.py migrate
     poetry run python3 manage.py migrate_dynamo
-    poetry run gunicorn temba.wsgi:application \
-    --bind 0.0.0.0:8000 \
-    --workers 12 \
-    --threads 2 \
-    --timeout 60
+    poetry run python3 manage.py runserver 0.0.0.0:8000
 elif [ "$ACTION" = "celery" ]; then
     echo "Running RapidPro celery worker..."
 	.venv/bin/celery -A temba worker -E -B --loglevel=INFO
