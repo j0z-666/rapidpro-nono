@@ -15,6 +15,7 @@ services:
     image: nginx
     volumes:
       - "./nginx/default.conf:/etc/nginx/conf.d/default.conf"
+      - static_data:/rapidpro/sitestatic
 
   postgres:
     image: postgres:17-alpine
@@ -84,6 +85,8 @@ services:
 
   rapidpro:
     image: nyaruka/rapidpro:stable
+    volumes:
+      - static_data:/rapidpro/sitestatic
     build:
       context: ./rapidpro/
       args:
@@ -238,3 +241,4 @@ volumes:
     driver: local
   caddy_config:
     driver: local
+  static_data:
