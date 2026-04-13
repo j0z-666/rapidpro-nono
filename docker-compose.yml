@@ -199,7 +199,7 @@ services:
       COURIER_ADDRESS: 0.0.0.0
       COURIER_DB: postgres://temba:temba@postgres:5432/temba?sslmode=disable
       COURIER_VALKEY: valkey://valkey:6379/15
-      COURIER_DOMAIN: courier:8080
+      COURIER_DOMAIN: http://courier:8080   ✅
       COURIER_BASE_URL: http://courier:8080
       COURIER_DISALLOWED_NETWORKS: 6.6.6.6
       COURIER_AUTH_TOKEN: topsecret
