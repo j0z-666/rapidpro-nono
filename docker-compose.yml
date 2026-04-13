@@ -165,8 +165,8 @@ services:
       MAILROOM_DB: postgres://temba:temba@postgres:5432/temba?sslmode=disable
       MAILROOM_VALKEY: valkey://valkey:6379/15
       MAILROOM_ELASTIC: http://elastic:9200
-      MAILROOM_DOMAIN: courier:8080
-      MAILROOM_ATTACHMENT_DOMAIN: courier:8080
+      MAILROOM_DOMAIN: http://courier:8080
+      MAILROOM_ATTACHMENT_DOMAIN: http://courier:8080
       MAILROOM_DISALLOWED_NETWORKS: 6.6.6.6
       MAILROOM_AUTH_TOKEN: topsecret
       MAILROOM_COURIER_AUTH_TOKEN: topsecret
@@ -199,8 +199,8 @@ services:
       COURIER_ADDRESS: 0.0.0.0
       COURIER_DB: postgres://temba:temba@postgres:5432/temba?sslmode=disable
       COURIER_VALKEY: valkey://valkey:6379/15
-      COURIER_DOMAIN: courier:8080
-      COURIER_BASE_URL: courier:8080
+      COURIER_DOMAIN: http://courier:8080
+      COURIER_BASE_URL: http://courier:8080
       COURIER_DISALLOWED_NETWORKS: 6.6.6.6
       COURIER_AUTH_TOKEN: topsecret
       COURIER_AWS_ACCESS_KEY_ID: root
