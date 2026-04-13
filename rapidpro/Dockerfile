@@ -25,8 +25,8 @@ RUN curl -sSL https://install.python-poetry.org | python3 -
 
 WORKDIR /rapidpro
 
-# 🔥 TU FORK DIRECTO
-RUN git clone --branch ${RAPIDPRO_TAG} https://github.com/j0z-666/rapidpro.git .
+# Clone official RapidPro repository
+RUN git clone --branch ${RAPIDPRO_TAG} https://github.com/rapidpro/rapidpro.git .
 
 # Python deps
 RUN poetry install --no-root --no-interaction --no-ansi
