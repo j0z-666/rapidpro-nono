@@ -76,6 +76,19 @@ services:
     volumes:
       - minio_data:/data
 
+  minio-init:
+    image: minio/mc
+    depends_on:
+      - minio
+    volumes:
+      - ./minio/init-minio.sh:/init.sh
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      chmod +x /init.sh;
+      /init.sh;
+      "
+
   localstack:
     image: localstack/localstack:latest
     volumes:
@@ -111,6 +124,8 @@ services:
         condition: service_healthy
       localstack:
         condition: service_healthy
+      mailroom:
+        condition: service_started
     ports:
       - 8000:8000
     mem_reservation: 1g # Resource optimization
@@ -166,6 +181,10 @@ services:
         condition: service_healthy
       localstack:
         condition: service_healthy
+      minio:
+        condition: service_started
+      minio-init:
+        condition: service_completed_successfully
     ports:
       - 8090:8090
     environment:
