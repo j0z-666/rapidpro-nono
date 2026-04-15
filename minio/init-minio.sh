@@ -17,5 +17,7 @@ mc mb -p minio/temba-default || true
 
 # permisos públicos solo donde aplica
 mc anonymous set public minio/temba-attachments || true
+mc anonymous set public minio/temba-default || true
+
 
 echo "🚀 MinIO initialized"
