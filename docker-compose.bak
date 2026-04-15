@@ -15,6 +15,7 @@ services:
     image: nginx
     volumes:
       - "./nginx/default.conf:/etc/nginx/conf.d/default.conf"
+      - static_data:/rapidpro/sitestatic
 
   postgres:
     image: postgres:17-alpine
@@ -25,6 +26,7 @@ services:
       - 5432:5432
     environment:
       POSTGRES_PASSWORD: tembatemba
+    mem_reservation: 1g # Resource optimization
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       interval: 10s
@@ -41,10 +43,15 @@ services:
       xpack.security.enabled: false
       ingest.geoip.downloader.enabled: false
       logger.level: INFO
+      ES_JAVA_OPTS: -Xms2g -Xmx2g # Memory optimization for your VM
+    mem_reservation: 2g # Resource optimization
+    mem_limit: 4g # Resource optimization
     healthcheck:
-      test: curl -s http://localhost:9200 >/dev/null || exit 1
+      # Improved healthcheck: waits for cluster status to be yellow or green
+      test: ["CMD-SHELL", "curl -s -f http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s || exit 1"]
       interval: 10s
       timeout: 5s
+      retries: 10
 
   valkey:
     image: valkey/valkey:8.0-alpine
@@ -78,6 +85,8 @@ services:
 
   rapidpro:
     image: nyaruka/rapidpro:stable
+    volumes:
+      - static_data:/rapidpro/sitestatic
     build:
       context: ./rapidpro/
       args:
@@ -94,6 +103,7 @@ services:
         condition: service_healthy
     ports:
       - 8000:8000
+    mem_reservation: 1g # Resource optimization
     environment:
       MAILROOM_URL: http://mailroom:8090
       MAILROOM_AUTH_TOKEN: topsecret
@@ -105,8 +115,6 @@ services:
       EMAIL_USE_SSL: "false"
       DEFAULT_FROM_EMAIL: ${EMAIL_HOST_USER}
       FLOW_FROM_EMAIL: ${EMAIL_HOST_USER}
-      CSRF_TRUSTED_ORIGINS: https://rapidpro.nono-labs.com
-      USE_X_FORWARDED_HOST: "True"
     healthcheck:
       test: curl -s http://localhost:8000 >/dev/null || exit 1
       interval: 15s
@@ -122,7 +130,12 @@ services:
         - RAPIDPRO_TAG=mi-custom-v26
     command: ["celery"]
     depends_on:
-      rapidpro:
+      # Celery depends on the same core services as rapidpro
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+      rapidpro: # Still needs rapidpro to be up for some configurations
         condition: service_healthy
     environment:
       MAILROOM_URL: http://mailroom:8090
@@ -134,7 +147,14 @@ services:
       context: https://github.com/nyaruka/mailroom.git#v26.0.0
       dockerfile: Dockerfile
     depends_on:
-      rapidpro:
+      # More resilient dependencies
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+      elastic:
+        condition: service_healthy
+      localstack:
         condition: service_healthy
     ports:
       - 8090:8090
@@ -143,15 +163,15 @@ services:
       MAILROOM_DB: postgres://temba:temba@postgres:5432/temba?sslmode=disable
       MAILROOM_VALKEY: valkey://valkey:6379/15
       MAILROOM_ELASTIC: http://elastic:9200
-      MAILROOM_DOMAIN: ${MAILROOM_DOMAIN:-host.docker.internal}
-      MAILROOM_ATTACHMENT_DOMAIN: ${MAILROOM_ATTACHMENT_DOMAIN:-host.docker.internal}
+      MAILROOM_DOMAIN: courier:8080
+      MAILROOM_ATTACHMENT_DOMAIN: courier:8080
       MAILROOM_DISALLOWED_NETWORKS: 6.6.6.6
       MAILROOM_AUTH_TOKEN: topsecret
       MAILROOM_COURIER_AUTH_TOKEN: topsecret
       MAILROOM_AWS_ACCESS_KEY_ID: root
       MAILROOM_AWS_SECRET_ACCESS_KEY: tembatemba
       MAILROOM_DYNAMO_ENDPOINT: http://localstack:4566
-      MAILROOM_DYNAMO_TABLE_PREFIX: Temba
+      MAILROOM_DYNAMO_TABLE_PREFIX: Test #Temba
       MAILROOM_S3_ENDPOINT: http://localstack:4566
       MAILROOM_S3_SESSIONS_BUCKET: temba-sessions
       MAILROOM_S3_ATTACHMENTS_BUCKET: temba-attachments
@@ -164,7 +184,12 @@ services:
       context: https://github.com/nyaruka/courier.git#v26.0.1
       dockerfile: Dockerfile
     depends_on:
-      rapidpro:
+      # More resilient dependencies
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+      localstack:
         condition: service_healthy
     ports:
       - 8080:8080
@@ -172,14 +197,14 @@ services:
       COURIER_ADDRESS: 0.0.0.0
       COURIER_DB: postgres://temba:temba@postgres:5432/temba?sslmode=disable
       COURIER_VALKEY: valkey://valkey:6379/15
-      COURIER_DOMAIN: ${COURIER_DOMAIN:-host.docker.internal}
-      COURIER_BASE_URL: ${COURIER_BASE_URL:-https://host.docker.internal}
+      COURIER_DOMAIN: courier:8080
+      COURIER_BASE_URL: courier:8080
       COURIER_DISALLOWED_NETWORKS: 6.6.6.6
       COURIER_AUTH_TOKEN: topsecret
       COURIER_AWS_ACCESS_KEY_ID: root
       COURIER_AWS_SECRET_ACCESS_KEY: tembatemba
       COURIER_DYNAMO_ENDPOINT: http://localstack:4566
-      COURIER_DYNAMO_TABLE_PREFIX: Temba
+      COURIER_DYNAMO_TABLE_PREFIX: Test #Temba
       COURIER_S3_ENDPOINT: http://localstack:4566
       COURIER_S3_ATTACHMENTS_BUCKET: temba-attachments
       COURIER_S3_PATH_STYLE: true
@@ -191,7 +216,10 @@ services:
       context: https://github.com/nyaruka/rp-indexer.git#v26.0.1
       dockerfile: Dockerfile
     depends_on:
-      rapidpro:
+      # More resilient dependencies
+      postgres:
+        condition: service_healthy
+      elastic:
         condition: service_healthy
     environment:
       INDEXER_DB: postgres://temba:temba@postgres:5432/temba?sslmode=disable
@@ -211,3 +239,4 @@ volumes:
     driver: local
   caddy_config:
     driver: local
+  static_data:

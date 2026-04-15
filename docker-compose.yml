@@ -64,16 +64,26 @@ services:
       test: ["CMD", "valkey-cli", "ping"]
       interval: 5s
       timeout: 2s
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    ports:
+      - 9000:9000
+      - 9001:9001
+    environment:
+      MINIO_ROOT_USER: root
+      MINIO_ROOT_PASSWORD: tembatemba
+    volumes:
+      - minio_data:/data
 
   localstack:
     image: localstack/localstack:latest
     volumes:
-      - ./localstack/init-s3.sh:/etc/localstack/init/ready.d/init-s3.sh
       - localstack:/var/lib/localstack
     ports:
       - 4566:4566
     environment:
-      SERVICES: s3,dynamodb
+      SERVICES: dynamodb
       AWS_ACCESS_KEY_ID: root
       AWS_SECRET_ACCESS_KEY: tembatemba
       AWS_DEFAULT_REGION: us-east-1
@@ -172,10 +182,10 @@ services:
       MAILROOM_AWS_SECRET_ACCESS_KEY: tembatemba
       MAILROOM_DYNAMO_ENDPOINT: http://localstack:4566
       MAILROOM_DYNAMO_TABLE_PREFIX: Test #Temba
-      MAILROOM_S3_ENDPOINT: http://localstack:4566
+      MAILROOM_S3_ENDPOINT: http://minio:9000
+      MAILROOM_S3_PATH_STYLE: true
       MAILROOM_S3_SESSIONS_BUCKET: temba-sessions
       MAILROOM_S3_ATTACHMENTS_BUCKET: temba-attachments
-      MAILROOM_S3_PATH_STYLE: true
       MAILROOM_LOG_LEVEL: info
 
   courier:
@@ -205,7 +215,7 @@ services:
       COURIER_AWS_SECRET_ACCESS_KEY: tembatemba
       COURIER_DYNAMO_ENDPOINT: http://localstack:4566
       COURIER_DYNAMO_TABLE_PREFIX: Test #Temba
-      COURIER_S3_ENDPOINT: http://localstack:4566
+      COURIER_S3_ENDPOINT: http://minio:9000
       COURIER_S3_ATTACHMENTS_BUCKET: temba-attachments
       COURIER_S3_PATH_STYLE: true
       COURIER_LOG_LEVEL: info
@@ -238,5 +248,7 @@ volumes:
   caddy_data:
     driver: local
   caddy_config:
+    driver: local
+  minio_data:
     driver: local
   static_data:
