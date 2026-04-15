@@ -13,6 +13,7 @@ echo "✅ MinIO ready"
 # crear buckets (idempotente)
 mc mb -p minio/temba-attachments || true
 mc mb -p minio/temba-sessions || true
+mc mb -p minio/temba-default || true
 
 # permisos públicos solo donde aplica
 mc anonymous set public minio/temba-attachments || true
