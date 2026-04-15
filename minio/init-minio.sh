@@ -1,10 +1,20 @@
 #!/bin/sh
+set -e
 
-mc alias set minio http://minio:9000 root tembatemba
+echo "⏳ Waiting for MinIO..."
 
-mc mb minio/temba-attachments
-mc mb minio/temba-sessions
+# esperar a que MinIO responda
+until mc alias set minio http://minio:9000 root tembatemba >/dev/null 2>&1; do
+  sleep 2
+done
 
-mc anonymous set public minio/temba-attachments
+echo "✅ MinIO ready"
 
-echo "MinIO initialized 🚀"
+# crear buckets (idempotente)
+mc mb -p minio/temba-attachments || true
+mc mb -p minio/temba-sessions || true
+
+# permisos públicos solo donde aplica
+mc anonymous set public minio/temba-attachments || true
+
+echo "🚀 MinIO initialized"
