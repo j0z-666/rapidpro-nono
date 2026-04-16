@@ -16,6 +16,7 @@ services:
     volumes:
       - "./nginx/default.conf:/etc/nginx/conf.d/default.conf"
       - static_data:/rapidpro/sitestatic
+      - "./certs:/etc/nginx/certs"   #Es para que nginx pueda resolver el hostname de courier, con https://courier.internal
     networks: #Es para que nginx pueda resolver el hostname de courier, con https://courier.internal
       default:
         aliases:
