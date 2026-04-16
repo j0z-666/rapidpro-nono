@@ -192,8 +192,10 @@ services:
       MAILROOM_DB: postgres://temba:temba@postgres:5432/temba?sslmode=disable
       MAILROOM_VALKEY: valkey://valkey:6379/15
       MAILROOM_ELASTIC: http://elastic:9200
-      MAILROOM_DOMAIN: courier:8080
-      MAILROOM_ATTACHMENT_DOMAIN: courier:8080
+      # MAILROOM_DOMAIN: courier:8080
+      # MAILROOM_ATTACHMENT_DOMAIN: courier:8080
+      MAILROOM_DOMAIN: courier.internal
+      MAILROOM_ATTACHMENT_DOMAIN: courier.internal
       MAILROOM_DISALLOWED_NETWORKS: 6.6.6.6
       MAILROOM_AUTH_TOKEN: topsecret
       MAILROOM_COURIER_AUTH_TOKEN: topsecret
