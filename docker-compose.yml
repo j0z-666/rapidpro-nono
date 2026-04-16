@@ -16,6 +16,10 @@ services:
     volumes:
       - "./nginx/default.conf:/etc/nginx/conf.d/default.conf"
       - static_data:/rapidpro/sitestatic
+    networks: #Es para que nginx pueda resolver el hostname de courier, con https://courier.internal
+      default:
+        aliases:
+          - courier.internal
 
   postgres:
     image: postgres:17-alpine
