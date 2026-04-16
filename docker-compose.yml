@@ -173,6 +173,8 @@ services:
 
   mailroom:
     image: nyaruka/mailroom:stable
+    volumes: ##para testear https en dev
+      - "./certs/courier.crt:/usr/local/share/ca-certificates/courier.crt"
     build: 
       context: https://github.com/nyaruka/mailroom.git#v26.0.0
       dockerfile: Dockerfile
