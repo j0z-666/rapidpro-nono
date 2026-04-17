@@ -16,6 +16,11 @@ services:
     volumes:
       - "./nginx/default.conf:/etc/nginx/conf.d/default.conf"
       - static_data:/rapidpro/sitestatic
+      - "./certs:/etc/nginx/certs"   #Es para que nginx pueda resolver el hostname de courier, con https://courier.internal
+    networks: #Es para que nginx pueda resolver el hostname de courier, con https://courier.internal
+      default:
+        aliases:
+          - courier.internal
 
   postgres:
     image: postgres:17-alpine
@@ -64,16 +69,39 @@ services:
       test: ["CMD", "valkey-cli", "ping"]
       interval: 5s
       timeout: 2s
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    ports:
+      - 9000:9000
+      - 9001:9001
+    environment:
+      MINIO_ROOT_USER: root
+      MINIO_ROOT_PASSWORD: tembatemba
+    volumes:
+      - minio_data:/data
+
+  minio-init:
+    image: minio/mc
+    depends_on:
+      - minio
+    volumes:
+      - ./minio/init-minio.sh:/init.sh
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      chmod +x /init.sh;
+      /init.sh;
+      "
 
   localstack:
     image: localstack/localstack:latest
     volumes:
-      - ./localstack/init-s3.sh:/etc/localstack/init/ready.d/init-s3.sh
       - localstack:/var/lib/localstack
     ports:
       - 4566:4566
     environment:
-      SERVICES: s3,dynamodb
+      SERVICES: dynamodb
       AWS_ACCESS_KEY_ID: root
       AWS_SECRET_ACCESS_KEY: tembatemba
       AWS_DEFAULT_REGION: us-east-1
@@ -101,6 +129,8 @@ services:
         condition: service_healthy
       localstack:
         condition: service_healthy
+      mailroom:
+        condition: service_started
     ports:
       - 8000:8000
     mem_reservation: 1g # Resource optimization
@@ -143,6 +173,8 @@ services:
 
   mailroom:
     image: nyaruka/mailroom:stable
+    volumes: ##para testear https en dev
+      - "./certs/courier.crt:/usr/local/share/ca-certificates/courier.crt"
     build: 
       context: https://github.com/nyaruka/mailroom.git#v26.0.0
       dockerfile: Dockerfile
@@ -156,6 +188,10 @@ services:
         condition: service_healthy
       localstack:
         condition: service_healthy
+      minio:
+        condition: service_started
+      minio-init:
+        condition: service_completed_successfully
     ports:
       - 8090:8090
     environment:
@@ -163,8 +199,10 @@ services:
       MAILROOM_DB: postgres://temba:temba@postgres:5432/temba?sslmode=disable
       MAILROOM_VALKEY: valkey://valkey:6379/15
       MAILROOM_ELASTIC: http://elastic:9200
-      MAILROOM_DOMAIN: courier:8080
-      MAILROOM_ATTACHMENT_DOMAIN: courier:8080
+      # MAILROOM_DOMAIN: courier:8080
+      # MAILROOM_ATTACHMENT_DOMAIN: courier:8080
+      MAILROOM_DOMAIN: courier.internal
+      MAILROOM_ATTACHMENT_DOMAIN: courier.internal
       MAILROOM_DISALLOWED_NETWORKS: 6.6.6.6
       MAILROOM_AUTH_TOKEN: topsecret
       MAILROOM_COURIER_AUTH_TOKEN: topsecret
@@ -172,10 +210,10 @@ services:
       MAILROOM_AWS_SECRET_ACCESS_KEY: tembatemba
       MAILROOM_DYNAMO_ENDPOINT: http://localstack:4566
       MAILROOM_DYNAMO_TABLE_PREFIX: Test #Temba
-      MAILROOM_S3_ENDPOINT: http://localstack:4566
+      MAILROOM_S3_ENDPOINT: http://minio:9000
+      MAILROOM_S3_PATH_STYLE: true
       MAILROOM_S3_SESSIONS_BUCKET: temba-sessions
       MAILROOM_S3_ATTACHMENTS_BUCKET: temba-attachments
-      MAILROOM_S3_PATH_STYLE: true
       MAILROOM_LOG_LEVEL: info
 
   courier:
@@ -205,7 +243,7 @@ services:
       COURIER_AWS_SECRET_ACCESS_KEY: tembatemba
       COURIER_DYNAMO_ENDPOINT: http://localstack:4566
       COURIER_DYNAMO_TABLE_PREFIX: Test #Temba
-      COURIER_S3_ENDPOINT: http://localstack:4566
+      COURIER_S3_ENDPOINT: http://minio:9000
       COURIER_S3_ATTACHMENTS_BUCKET: temba-attachments
       COURIER_S3_PATH_STYLE: true
       COURIER_LOG_LEVEL: info
@@ -238,5 +276,7 @@ volumes:
   caddy_data:
     driver: local
   caddy_config:
+    driver: local
+  minio_data:
     driver: local
   static_data:

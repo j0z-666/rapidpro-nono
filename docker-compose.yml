@@ -94,22 +94,11 @@ services:
       /init.sh;
       "
 
-  localstack:
-    image: localstack/localstack:latest
+  dynamodb:
+    image: amazon/dynamodb-local
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /data"
     volumes:
-      - localstack:/var/lib/localstack
-    ports:
-      - 4566:4566
-    environment:
-      SERVICES: dynamodb
-      AWS_ACCESS_KEY_ID: root
-      AWS_SECRET_ACCESS_KEY: tembatemba
-      AWS_DEFAULT_REGION: us-east-1
-      LOCALSTACK_AUTH_TOKEN: ${LOCALSTACK_AUTH_TOKEN}
-    healthcheck:
-      test: ["CMD-SHELL", "curl -s http://localhost:4566/_localstack/health >/dev/null || exit 1"]
-      interval: 10s
-      timeout: 5s
+      - dynamodb_data:/data
 
   rapidpro:
     image: nyaruka/rapidpro:stable
@@ -127,7 +116,7 @@ services:
         condition: service_healthy
       valkey:
         condition: service_healthy
-      localstack:
+      dynamodb:
         condition: service_healthy
       mailroom:
         condition: service_started
@@ -186,7 +175,7 @@ services:
         condition: service_healthy
       elastic:
         condition: service_healthy
-      localstack:
+      dynamodb:
         condition: service_healthy
       minio:
         condition: service_started
@@ -208,7 +197,7 @@ services:
       MAILROOM_COURIER_AUTH_TOKEN: topsecret
       MAILROOM_AWS_ACCESS_KEY_ID: root
       MAILROOM_AWS_SECRET_ACCESS_KEY: tembatemba
-      MAILROOM_DYNAMO_ENDPOINT: http://localstack:4566
+      MAILROOM_DYNAMO_ENDPOINT: http://dynamodb:8000
       MAILROOM_DYNAMO_TABLE_PREFIX: Test #Temba
       MAILROOM_S3_ENDPOINT: http://minio:9000
       MAILROOM_S3_PATH_STYLE: true
@@ -227,7 +216,7 @@ services:
         condition: service_healthy
       valkey:
         condition: service_healthy
-      localstack:
+      dynamodb:
         condition: service_healthy
     ports:
       - 8080:8080
@@ -241,7 +230,7 @@ services:
       COURIER_AUTH_TOKEN: topsecret
       COURIER_AWS_ACCESS_KEY_ID: root
       COURIER_AWS_SECRET_ACCESS_KEY: tembatemba
-      COURIER_DYNAMO_ENDPOINT: http://localstack:4566
+      COURIER_DYNAMO_ENDPOINT: http://dynamodb:8000
       COURIER_DYNAMO_TABLE_PREFIX: Test #Temba
       COURIER_S3_ENDPOINT: http://minio:9000
       COURIER_S3_ATTACHMENTS_BUCKET: temba-attachments
@@ -271,7 +260,7 @@ volumes:
     driver: local
   valkey:
     driver: local
-  localstack:
+  dynamodb_data:
     driver: local
   caddy_data:
     driver: local
