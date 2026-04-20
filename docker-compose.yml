@@ -89,14 +89,17 @@ services:
   minio-init:
     image: minio/mc
     depends_on:
-      - minio
+      minio:
+        condition: service_healthy
     volumes:
       - ./minio/init-minio.sh:/init.sh
     entrypoint: >
       /bin/sh -c "
+      echo 'waiting minio...';
       sleep 5;
       chmod +x /init.sh;
       /init.sh;
+      tail -f /dev/null;
       "
 
   dynamodb:
