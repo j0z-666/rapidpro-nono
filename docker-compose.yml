@@ -214,6 +214,7 @@ services:
       MAILROOM_S3_SESSIONS_BUCKET: temba-sessions
       MAILROOM_S3_ATTACHMENTS_BUCKET: temba-attachments
       MAILROOM_LOG_LEVEL: info
+      MAILROOM_AWS_REGION: us-east-1
 
   courier:
     image: nyaruka/courier:stable
@@ -244,6 +245,7 @@ services:
       COURIER_AUTH_TOKEN: topsecret
       COURIER_AWS_ACCESS_KEY_ID: root
       COURIER_AWS_SECRET_ACCESS_KEY: tembatemba
+      COURIER_AWS_REGION: us-east-1
       COURIER_DYNAMO_ENDPOINT: http://dynamodb:8000
       COURIER_DYNAMO_TABLE_PREFIX: Test #Temba
       COURIER_S3_ENDPOINT: http://minio:9000
