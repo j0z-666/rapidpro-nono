@@ -103,6 +103,7 @@ services:
 
   dynamodb:
     image: amazon/dynamodb-local
+    user: root
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /data"
     volumes:
       - dynamodb_data:/data
