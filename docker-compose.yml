@@ -105,10 +105,10 @@ services:
     volumes:
       - dynamodb_data:/data
     healthcheck:
-      test: ["CMD-SHELL", "curl -s http://localhost:8000 >/dev/null || exit 1"]
+      test: ["CMD-SHELL", "curl -s -X POST http://localhost:8000 -H 'X-Amz-Target: DynamoDB_20120810.ListTables' -H 'Content-Type: application/x-amz-json-1.0' -d '{}' >/dev/null || exit 1"]
       interval: 5s
       timeout: 3s
-      retries: 5
+      retries: 10
 
   rapidpro:
     image: nyaruka/rapidpro:stable
