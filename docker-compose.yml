@@ -99,7 +99,6 @@ services:
       sleep 5;
       chmod +x /init.sh;
       /init.sh;
-      tail -f /dev/null;
       "
 
   dynamodb:
@@ -218,6 +217,7 @@ services:
       MAILROOM_S3_ATTACHMENTS_BUCKET: temba-attachments
       MAILROOM_LOG_LEVEL: info
       MAILROOM_AWS_REGION: us-east-1
+      AWS_EC2_METADATA_DISABLED: "true"
 
   courier:
     image: nyaruka/courier:stable
@@ -255,6 +255,7 @@ services:
       COURIER_S3_ATTACHMENTS_BUCKET: temba-attachments
       COURIER_S3_PATH_STYLE: true
       COURIER_LOG_LEVEL: info
+      AWS_EC2_METADATA_DISABLED: "true"
 
   indexer:
     image: nyaruka/indexer:stable
