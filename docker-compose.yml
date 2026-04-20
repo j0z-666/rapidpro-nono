@@ -80,6 +80,11 @@ services:
       MINIO_ROOT_PASSWORD: tembatemba
     volumes:
       - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   minio-init:
     image: minio/mc
@@ -223,6 +228,10 @@ services:
         condition: service_healthy
       dynamodb:
         condition: service_healthy
+      minio:
+        condition: service_healthy 
+      minio-init:
+        condition: service_completed_successfully
     ports:
       - 8080:8080
     environment:
