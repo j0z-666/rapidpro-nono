@@ -215,6 +215,9 @@ services:
       MAILROOM_S3_ATTACHMENTS_BUCKET: temba-attachments
       MAILROOM_LOG_LEVEL: info
       MAILROOM_AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: root
+      AWS_SECRET_ACCESS_KEY: tembatemba
+      AWS_REGION: us-east-1
 
   courier:
     image: nyaruka/courier:stable
